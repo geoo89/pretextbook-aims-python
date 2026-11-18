@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project ptx-version="2">
+  <targets>
+    <!-- plain static HTML: Runestone components (ActiveCode, Parsons, FITB...)
+         run in the browser, scores live only in the student's browser -->
+    <target name="web" format="html" />
+    <!-- same source, hosted on a Runestone server (e.g. Runestone Academy):
+         adds logins, a gradebook, assignments and LTI to Moodle -->
+    <target name="runestone" format="html" platform="runestone" />
+  </targets>
+</project>

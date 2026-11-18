@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section xml:id="types-sage">
+  <title>The Same Four Types with Sage Cells</title>
+
+  <introduction>
+    <p>
+      Sage cells run <em>real</em> CPython on a SageMathCell server
+      (<c>language="python"</c>, so there is no Sage preparsing). They have no
+      built-in grading. Instead, a setup cell at the top of the page defines
+      checking functions. PreTeXt links all Python cells on a page into one
+      session, so later cells can call those functions. Feedback is
+      self-check only: nothing is recorded, and a student could print
+      <q>Correct</q> themselves.
+    </p>
+  </introduction>
+
+  <subsection xml:id="sec-sage-all">
+    <title>All four types on one page</title>
+    <introduction>
+    <p>This cell runs automatically when the page loads.</p>
+    <sage language="python" auto-evaluate="yes">
+      <input><![CDATA[
+# ---- PRIMM self-check helpers (runs automatically) ----
+import io, contextlib, difflib, inspect
+EX = {
+  "trace": {"code": "def find_min(numbers):\n    best = numbers[0]\n    for i in range(1, len(numbers)):\n        if numbers[i] < best:\n            best = numbers[i]\n    return best\n\nprint(find_min([8, 3, 9, 1, 6]))\n"},
+  "gaps": {"template": "def find_min(numbers):\n    best = numbers[0]\n    for i in range(1, len(numbers)):\n        if ___:\n            best = ___\n    return best\n",
+           "name": "find_min", "cases": [([8, 3, 9, 1, 6], 1), ([4, 2, 7, 2, 9], 2), ([-3, -8, -1], -8)]},
+  "seed": {"original": "def find_min(numbers):\n    best = 0\n    for i in range(1, len(numbers)):\n        if numbers[i] < best:\n            best = numbers[i]\n    return best\n",
+           "name": "find_min", "max_lines": 1, "cases": [([5, 3, 8, 9], 3), ([7], 7), ([-3, -8, -1], -8)]},
+  "find_max": {"cases": [([5, 3, 8, 1], 8), ([7], 7), ([-4, -2, -9], -2)], "banned": ["max", "sorted"]},
+}
+def _run(code, env=None):
+    out, env = io.StringIO(), ({"__name__": "__main__"} if env is None else env)
+    try:
+        with contextlib.redirect_stdout(out):
+            exec(code, env)
+        return out.getvalue(), env
+    except Exception as e:
+        return out.getvalue() + type(e).__name__ + ": " + str(e) + "\n", env
+def _norm(s): return "\n".join(l.rstrip() for l in str(s).strip("\n").split("\n"))
+def _cases(f, cases, banned=()):
+    import builtins
+    saved = {b: getattr(builtins, b) for b in banned}
+    def stop(*a, **k): raise RuntimeError("that built-in function is not allowed here")
+    ok = True
+    try:
+        for b in banned: setattr(builtins, b, stop)
+        for arg, want in cases:
+            try: got = f(list(arg))
+            except Exception as e: got = type(e).__name__ + ": " + str(e)
+            good = got == want; ok = ok and good
+            print(("PASS" if good else "FAIL"), f"{f.__name__}({arg}) -> {got!r}, expected {want!r}")
+    finally:
+        for b, v in saved.items(): setattr(builtins, b, v)
+    print("All tests passed!" if ok else "Not yet - look at the FAIL lines.")
+def check_prediction(key, prediction):
+    actual, _ = _run(EX[key]["code"])
+    if _norm(actual) == _norm(prediction): print("Correct!")
+    else: print("Not quite. The actual output is:\n" + actual)
+def check_gaps(key, *gaps):
+    e = EX[key]; code = e["template"]
+    if len(gaps) != code.count("___"): return print(f"Please give {code.count('___')} gaps.")
+    for g in gaps: code = code.replace("___", g, 1)
+    print("Your completed code:\n" + code)
+    err, env = _run(code)
+    if err: return print(err)
+    _cases(env[e["name"]], e["cases"])
+def check_fix(key, fixed_code):
+    # fixed_code is a string: SageMathCell keeps no source for functions
+    # defined in a cell, so the line budget can only be checked on text.
+    e = EX[key]
+    a = [l.strip() for l in e["original"].splitlines() if l.strip()]
+    b = [l.strip() for l in fixed_code.splitlines() if l.strip()]
+    n = sum(max(i2 - i1, j2 - j1) for t, i1, i2, j1, j2 in
+            difflib.SequenceMatcher(a=a, b=b).get_opcodes() if t != "equal")
+    print(f"Lines changed: {n} (allowed: {e['max_lines']})")
+    if n == 0: return print("You have not changed anything yet.")
+    if n > e["max_lines"]: return print("Too many changes - start again from the original.")
+    err, env = _run(fixed_code)
+    if err: return print(err)
+    _cases(env[e["name"]], e["cases"])
+def check_function(key, f): _cases(f, EX[key]["cases"], EX[key].get("banned", ()))
+print("Checking helpers loaded.")
+]]></input>
+    </sage>
+    </introduction>
+
+    <subsubsection xml:id="subsec-sage-predict">
+      <title>Predict the output</title>
+      <program language="python">
+        <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if numbers[i] < best:
+            best = numbers[i]
+    return best
+
+print(find_min([8, 3, 9, 1, 6]))
+]]></code>
+      </program>
+      <p>Type your prediction between the triple quotes, then press Evaluate.</p>
+      <sage language="python">
+        <input><![CDATA[
+check_prediction("trace", """
+???
+""")
+]]></input>
+      </sage>
+    </subsubsection>
+
+    <subsubsection xml:id="subsec-sage-gaps">
+      <title>Fill in the gaps</title>
+      <program language="python">
+        <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if ___:
+            best = ___
+    return best
+]]></code>
+      </program>
+      <p>Put the code for each gap, in order, inside the quotes.</p>
+      <sage language="python">
+        <input><![CDATA[
+check_gaps("gaps", "gap 1 here", "gap 2 here")
+]]></input>
+      </sage>
+    </subsubsection>
+
+    <subsubsection xml:id="subsec-sage-fix">
+      <title>Fix the bug (one line)</title>
+      <p>Fix the bug by changing one line <em>inside the quotes</em>, then
+      press Evaluate. (The code sits in a string because a Sage cell cannot
+      otherwise see which lines you changed.)</p>
+      <sage language="python">
+        <input><![CDATA[
+my_fix = """
+def find_min(numbers):
+    best = 0
+    for i in range(1, len(numbers)):
+        if numbers[i] < best:
+            best = numbers[i]
+    return best
+"""
+check_fix("seed", my_fix)
+]]></input>
+      </sage>
+    </subsubsection>
+
+    <subsubsection xml:id="subsec-sage-write">
+      <title>Write code</title>
+      <p>Write <c>find_max</c> without <c>max()</c> or <c>sorted()</c>.</p>
+      <sage language="python">
+        <input><![CDATA[
+def find_max(numbers):
+    # your code here
+    pass
+
+check_function("find_max", find_max)
+]]></input>
+      </sage>
+    </subsubsection>
+  </subsection>
+</section>

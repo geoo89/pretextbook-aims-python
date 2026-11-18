@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section xml:id="types-fixbug">
+  <title>Fix the Bug</title>
+
+  <introduction>
+    <p>
+      Runestone cannot count how many lines a student changed: hidden tests
+      run as Python <em>after</em> the student's code and cannot see its
+      source. The line budget is therefore either honour-based, enforced by
+      locking code, or replaced by a two-step <q>find it, then fix it</q>.
+    </p>
+  </introduction>
+
+  <subsection xml:id="sec-fix-find">
+    <title>Step 1: find the buggy line (clickable area)</title>
+    <p>
+      The student clicks the line they think is wrong. This grades
+      <em>locating</em> the bug separately from repairing it. CodeRunner
+      cannot do this.
+    </p>
+    <exercise label="fix-areas-seed">
+      <statement>
+        <p>For <c>[5, 3, 8, 9]</c>, this <c>find_min</c> returns <c>0</c>.
+        Click the line that causes the bug.</p>
+      </statement>
+      <areas language="python">
+        <cline><area correct="no">def find_min(numbers):</area></cline>
+        <cline>    <area correct="yes">best = 0</area></cline>
+        <cline>    <area correct="no">for i in range(1, len(numbers)):</area></cline>
+        <cline>        <area correct="no">if numbers[i] &lt; best:</area></cline>
+        <cline>            <area correct="no">best = numbers[i]</area></cline>
+        <cline>    <area correct="no">return best</area></cline>
+      </areas>
+      <feedback>
+        <p>Every number in the list is above 0, so nothing ever beats the
+        starting value. The seed must be a real element, <c>numbers[0]</c>.</p>
+      </feedback>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-fix-activecode">
+    <title>Step 2: fix it in ActiveCode (tests enforced, budget on trust)</title>
+    <exercise label="fix-ac-seed">
+      <statement>
+        <p>Fix the bug by changing <alert>one line only</alert>. Press
+        <em>Run</em> to run the tests. Use <em>Reset</em> to start again.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-fix-seed">
+        <code><![CDATA[
+def find_min(numbers):
+    best = 0
+    for i in range(1, len(numbers)):
+        if numbers[i] < best:
+            best = numbers[i]
+    return best
+
+print(find_min([5, 3, 8, 9]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(find_min([5, 3, 8, 9]), 3, "find_min([5, 3, 8, 9])")
+        self.assertEqual(find_min([7]), 7, "a single element")
+        self.assertEqual(find_min([-3, -8, -1]), -8, "negative numbers")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-fix-locked">
+    <title>Budget enforced by locking</title>
+    <p>
+      Only the lines around the bug are editable, and everything else is a
+      locked preamble or postamble. This enforces the budget but shows where
+      the bug is, so use it after the clickable-area step, or when the skill
+      is the <em>repair</em> rather than the search.
+    </p>
+    <exercise label="fix-locked-overwrite">
+      <title>Overwriting every time</title>
+      <statement>
+        <p>This <c>find_min</c> always returns the last element. Fix the loop body.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-fix-locked">
+        <preamble visible="yes"><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+]]></preamble>
+        <code><![CDATA[
+        best = numbers[i]
+]]></code>
+        <postamble visible="yes"><![CDATA[
+    return best
+]]></postamble>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(find_min([5, 3, 8, 9]), 3, "find_min([5, 3, 8, 9])")
+        self.assertEqual(find_min([5, 3, 8, 1]), 1, "find_min([5, 3, 8, 1])")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-fix-choose">
+    <title>Choose the repair (Parsons with one paired block)</title>
+    <p>
+      A fully recognition-based version: the program is given in order, and
+      at the buggy line the student chooses between the original and
+      candidate repairs.
+    </p>
+    <exercise label="fix-parsons-offbyone" language="python" indentation="show">
+      <statement>
+        <p>This <c>find_min</c> never checks the last element. Arrange the
+        lines and choose the correct loop header.</p>
+      </statement>
+      <blocks>
+        <block><cline>def find_min(numbers):</cline></block>
+        <block><cline>    best = numbers[0]</cline></block>
+        <block>
+          <choice correct="yes"><cline>    for i in range(1, len(numbers)):</cline></choice>
+          <choice><cline>    for i in range(1, len(numbers) - 1):</cline></choice>
+          <choice><cline>    for i in range(1, len(numbers) + 1):</cline></choice>
+        </block>
+        <block><cline>        if numbers[i] &lt; best:</cline></block>
+        <block><cline>            best = numbers[i]</cline></block>
+        <block><cline>    return best</cline></block>
+      </blocks>
+    </exercise>
+  </subsection>
+</section>

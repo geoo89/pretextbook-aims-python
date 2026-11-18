@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<publication>
+  <source>
+    <!-- where pretext writes generated assets (CodeLens traces, QR codes, ...) -->
+    <directories generated="../generated-assets" />
+  </source>
+  <common>
+    <chunking level="2" />
+    <tableofcontents level="2" />
+  </common>
+  <html>
+    <platform host="web" />
+    <!-- show exercises expanded instead of as collapsed "Checkpoint" knowls -->
+    <knowl exercise-inline="no" />
+  </html>
+</publication>

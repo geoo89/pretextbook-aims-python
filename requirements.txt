@@ -1,0 +1,2 @@
+# Pinned so that CI builds exactly what was tested locally. Upgrade deliberately.
+pretext==2.56.2

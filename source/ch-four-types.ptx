@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xml:id="ch-four-types" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>The Four Exercise Types in PreTeXt</title>
+  <introduction>
+    <p>
+      Each section of this chapter implements one of the course's four
+      exercise types in several ways, all using the <c>find_min</c> material
+      from block 8 of the syllabus. The last section does the same with Sage
+      cells only, for comparison. The analysis
+      behind it (<q>The four exercise types in a PreTeXt interactive
+      book</q>) is part of the course's syllabus documents.
+      <xref ref="ch-block06"/> uses the recommended techniques for a whole
+      block.
+    </p>
+  </introduction>
+
+  <xi:include href="types-predict.ptx" />
+  <xi:include href="types-gapfill.ptx" />
+  <xi:include href="types-fixbug.ptx" />
+  <xi:include href="types-write.ptx" />
+  <xi:include href="types-sage.ptx" />
+</chapter>

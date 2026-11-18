@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pretext xml:lang="en-US" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <docinfo>
+    <document-id>primm-four-types-demo</document-id>
+    <blurb shelf="Computer Science">The four PRIMM exercise types in PreTeXt.</blurb>
+    <directories external="../assets"/>
+  </docinfo>
+  <book xml:id="primm-demo">
+    <title>Interactive Python in PreTeXt</title>
+    <subtitle>The four exercise types, and block 6 as a worked chapter</subtitle>
+    <xi:include href="ch-four-types.ptx" />
+    <xi:include href="ch-block06.ptx" />
+  </book>
+</pretext>

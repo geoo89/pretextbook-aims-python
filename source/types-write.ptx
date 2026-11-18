@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section xml:id="types-write">
+  <title>Write Code</title>
+
+  <subsection xml:id="sec-write-activecode">
+    <title>ActiveCode with hidden unit tests</title>
+    <p>
+      This is PreTeXt's real counterpart of a CodeRunner write question: free
+      editing, optionally from a starting template, with hidden
+      <c>unittest</c> tests that report pass/fail per assertion. A
+      <q>banned function</q> rule can be enforced without parsing: the
+      hidden tests run in the same module, so they can <em>shadow</em>
+      <c>max</c> with a function that fails the test when called.
+    </p>
+    <exercise label="write-ac-findmax">
+      <title><c>find_max</c> without <c>max()</c></title>
+      <statement>
+        <p>Write <c>find_max(numbers)</c>, which returns the largest number in
+        a non-empty list. Do not use <c>max()</c> or <c>sorted()</c>.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-write-findmax">
+        <code><![CDATA[
+def find_max(numbers):
+    # your code here
+    pass
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+def _banned(*args, **kwargs):
+    raise Exception("max() and sorted() are not allowed in this exercise")
+max = _banned          # find_max looks up max/sorted in module globals first
+sorted = _banned
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(find_max([5, 3, 8, 1]), 8, "find_max([5, 3, 8, 1])")
+        self.assertEqual(find_max([7]), 7, "a single element")
+    def test_negative(self):
+        self.assertEqual(find_max([-4, -2, -9]), -2, "all negative: is your seed a list element?")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-write-template">
+    <title>Writing from a template (free editing)</title>
+    <exercise label="write-ac-linear-search">
+      <title><c>linear_search</c></title>
+      <statement>
+        <p>Complete <c>linear_search(numbers, target)</c>. It should return
+        the index of the first occurrence of <c>target</c>, or <c>-1</c>
+        if <c>target</c> is not in the list.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-write-linear">
+        <code><![CDATA[
+def linear_search(numbers, target):
+    for i in range(len(numbers)):
+        pass   # replace this line: check position i
+
+    return None   # replace: what if we never found it?
+
+
+print(linear_search([4, 7, 2, 9], 2))   # should print 2
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_found(self):
+        self.assertEqual(linear_search([4, 7, 2, 9], 2), 2, "found at index 2")
+        self.assertEqual(linear_search([3, 1, 3], 3), 0, "first occurrence")
+    def test_missing(self):
+        self.assertEqual(linear_search([4, 7, 2, 9], 100), -1, "not in the list")
+        self.assertEqual(linear_search([], 1), -1, "empty list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+</section>

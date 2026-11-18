@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section xml:id="types-predict">
+  <title>Predict the Output</title>
+  <subsection xml:id="sec-predict-fitb">
+    <title>Fill-in-the-blank: type the output</title>
+    <p>
+      The closest match to the CodeRunner prototype. The code is shown
+      <em>static</em> (not runnable), and the student types the output into a
+      blank. Each blank is checked against an anchored regular expression.
+      Extra wrong-answer tests attach feedback to specific misconceptions.
+    </p>
+
+    <exercise label="pred-fitb-findmin">
+      <title>Trace <c>find_min</c></title>
+      <statement>
+        <p>Read the program without running it.</p>
+        <program language="python">
+          <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if numbers[i] < best:
+            best = numbers[i]
+    return best
+
+print(find_min([8, 3, 9, 1, 6]))
+]]></code>
+        </program>
+        <p>It prints: <fillin mode="string" characters="6" name="out"/></p>
+      </statement>
+      <evaluation>
+        <evaluate name="out">
+          <test correct="yes">
+            <strcmp>1</strcmp>
+            <feedback><p>Right: <c>best</c> becomes 3, stays 3, becomes 1, stays 1.</p></feedback>
+          </test>
+          <test>
+            <strcmp>6</strcmp>
+            <feedback><p>6 is the <em>last</em> element. Does <c>best</c> change on every pass, or only when the <c>if</c> is true?</p></feedback>
+          </test>
+          <test>
+            <strcmp>8</strcmp>
+            <feedback><p>8 is only the starting value. Check what happens when <c>i</c> is 1.</p></feedback>
+          </test>
+          <test>
+            <strcmp>3</strcmp>
+            <feedback><p>Good start, but the loop does not stop at the first smaller number.</p></feedback>
+          </test>
+          <test>
+            <strcmp>.*</strcmp>
+            <feedback><p>The function returns one of the list's elements. Which one?</p></feedback>
+          </test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <exercise label="pred-fitb-multiline">
+      <title>Several lines of output, ending in an error</title>
+      <statement>
+        <p>What does this program print? Use one blank per line of output.
+        If the program stops with an error, write only the name of the error
+        (e.g. <c>NameError</c>) in the next blank, and write <c>nothing</c>
+        in any blank after that. (A blank cannot be left empty: an empty
+        blank always counts as <q>no answer</q>.)</p>
+        <program language="python">
+          <code><![CDATA[
+total = 0
+for i in range(1, 4):
+    total = total + i
+    print(total)
+print(min([]))
+print("done")
+]]></code>
+        </program>
+        <p>Line 1: <fillin mode="string" characters="16"/></p>
+        <p>Line 2: <fillin mode="string" characters="16"/></p>
+        <p>Line 3: <fillin mode="string" characters="16"/></p>
+        <p>Line 4: <fillin mode="string" characters="16"/></p>
+        <p>Line 5: <fillin mode="string" characters="16"/></p>
+      </statement>
+      <evaluation>
+        <evaluate><test correct="yes"><strcmp>1</strcmp></test></evaluate>
+        <evaluate><test correct="yes"><strcmp>3</strcmp></test>
+          <test><strcmp>2</strcmp><feedback><p>Line 2 prints the running total, not <c>i</c>.</p></feedback></test></evaluate>
+        <evaluate><test correct="yes"><strcmp>6</strcmp></test></evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>ValueError(:.*)?</strcmp></test>
+          <test><strcmp>(None|0|\[\])</strcmp><feedback><p><c>min</c> of an empty list has no answer, so Python stops with an error.</p></feedback></test>
+          <test><strcmp>.*Error.*</strcmp><feedback><p>It is an error, but not that one.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>(nothing|-)</strcmp></test>
+          <test><strcmp>done</strcmp><feedback><p>After an error the program stops. Nothing more is printed.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-predict-mcq">
+    <title>Multiple choice built from misconceptions</title>
+    <p>
+      Quicker to answer and to mark, and each distractor can be one named
+      misconception with its own feedback. Use it for early checks, and the
+      typed version when you want recall rather than recognition.
+    </p>
+    <exercise label="pred-mcq-tie">
+      <title>A tie for the minimum</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+def find_min_index(numbers):
+    best_i = 0
+    for i in range(1, len(numbers)):
+        if numbers[i] < numbers[best_i]:
+            best_i = i
+    return best_i
+
+print(find_min_index([4, 2, 7, 2, 9]))
+]]></code>
+        </program>
+        <p>What is printed?</p>
+      </statement>
+      <choices randomize="yes">
+        <choice correct="yes">
+          <statement><p><c>1</c></p></statement>
+          <feedback><p>Yes. The second 2 is not <em>smaller</em> than the first, so <c>best_i</c> stays 1.</p></feedback>
+        </choice>
+        <choice>
+          <statement><p><c>3</c></p></statement>
+          <feedback><p>That would need <c>&lt;=</c>. With strict <c>&lt;</c>, an equal value never replaces the best.</p></feedback>
+        </choice>
+        <choice>
+          <statement><p><c>2</c></p></statement>
+          <feedback><p>2 is the smallest <em>value</em>. The function returns a <em>position</em>.</p></feedback>
+        </choice>
+        <choice>
+          <statement><p><c>4</c></p></statement>
+          <feedback><p>Index 4 holds the last element. <c>best_i</c> only changes when the <c>if</c> is true.</p></feedback>
+        </choice>
+      </choices>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-predict-codelens">
+    <title>CodeLens: predict the trace step by step</title>
+    <p>
+      CodeLens steps through the program like Python Tutor. In
+      <em>checkpoint</em> mode it stops at chosen lines and asks for the value
+      of a variable before revealing it. This is the trace-table exercise
+      (block 8, exercise 2) made interactive. PreTeXt computes the traces at
+      build time (<c>pretext generate trace</c>).
+    </p>
+    <exercise label="pred-codelens-findmin">
+      <title>Trace the running best</title>
+      <statement>
+        <p>Step through the program. At each checkpoint, type the value of
+        <c>best</c> before stepping on.</p>
+      </statement>
+      <program language="python" interactive="codelens" label="codelens-findmin">
+        <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if numbers[i] < best:
+            best = numbers[i]
+    return best
+
+print(find_min([8, 3, 9, 1, 6]))
+]]></code>
+        <checkpoint line="6" answer-variable="current_frame.best">
+          <prompt>The loop is over. What value does <c>best</c> hold now?</prompt>
+        </checkpoint>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-predict-run">
+    <title>Predict, then run (honour system)</title>
+    <p>
+      The cheapest form, and the one the PRIMM <q>Run</q> stage expects:
+      the student commits to a prediction (written down, or in a separate short-answer exercise), then
+      runs the code and compares. Nothing is graded automatically.
+    </p>
+    <exercise label="pred-then-run">
+      <statement>
+        <p>Write down what you expect this to print. Then press
+        <em>Run</em> and compare. If you were wrong, explain why.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-pred-then-run">
+        <code><![CDATA[
+numbers = [5, 3, 8, 1]
+best = 0
+for x in numbers:
+    if x < best:
+        best = x
+print(best)
+]]></code>
+      </program>
+    </exercise>
+  </subsection>
+</section>

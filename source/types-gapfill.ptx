@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section xml:id="types-gapfill">
+  <title>Fill in the Gaps</title>
+
+  <introduction>
+    <p>
+      PreTeXt has no CodeRunner-style gap-filler, where an editor has locked
+      code with editable holes in it. The options below each give up something
+      different.
+    </p>
+  </introduction>
+
+  <subsection xml:id="sec-gap-activecode">
+    <title>ActiveCode with blanks and hidden tests</title>
+    <p>
+      The student overwrites the <c>____</c> markers in a normal editor.
+      Hidden unit tests check behaviour, so any correct completion passes.
+      The rest of the code is <em>not</em> locked, though.
+    </p>
+    <exercise label="gap-ac-findmin">
+      <title>Complete <c>find_min</c></title>
+      <statement>
+        <p>Replace each <c>____</c> so that <c>find_min</c> returns the
+        smallest number. Change nothing else. Then press <em>Run</em>
+        to run the hidden tests.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-gap-findmin">
+        <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if ____:
+            best = ____
+    return best
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(find_min([8, 3, 9, 1, 6]), 1, "find_min([8, 3, 9, 1, 6])")
+        self.assertEqual(find_min([4, 2, 7, 2, 9]), 2, "find_min([4, 2, 7, 2, 9])")
+        self.assertEqual(find_min([5]), 5, "a single element")
+        self.assertEqual(find_min([-3, -8, -1]), -8, "negative numbers")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-gap-locked">
+    <title>ActiveCode with locked code around one gap</title>
+    <p>
+      A visible <c>preamble</c> and <c>postamble</c> are shown but cannot be
+      edited, so only the middle region can change. This works when the
+      gap is one <em>contiguous</em> region. Two separate gaps need two
+      exercises, or the next technique.
+    </p>
+    <exercise label="gap-locked-cond">
+      <title>Only the loop body is yours</title>
+      <statement>
+        <p>Write the two lines of the loop body: compare, then maybe overwrite.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="ac-gap-locked">
+        <preamble visible="yes"><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+]]></preamble>
+        <code><![CDATA[
+        # your two lines here (keep the 8-space indent)
+]]></code>
+        <postamble visible="yes"><![CDATA[
+    return best
+]]></postamble>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(find_min([8, 3, 9, 1, 6]), 1, "find_min([8, 3, 9, 1, 6])")
+        self.assertEqual(find_min([5, 3, 8, 9]), 3, "find_min([5, 3, 8, 9])")
+        self.assertEqual(find_min([-3, -8, -1]), -8, "negative numbers")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-gap-fitb">
+    <title>Fill-in-the-blank with numbered gaps</title>
+    <p>
+      The code is shown with numbered gaps. The student types into one blank
+      per gap, and each blank is checked with a regular expression that
+      tolerates spacing and the equivalent forms you list. The code itself
+      is never run, so the regexes must cover every acceptable answer.
+    </p>
+    <exercise label="gap-fitb-findmin">
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+def find_min(numbers):
+    best = numbers[0]
+    for i in range(1, len(numbers)):
+        if ___1___:
+            best = ___2___
+    return best
+]]></code>
+        </program>
+        <p>Gap 1: <c>if</c> <fillin mode="string" characters="20"/> <c>:</c></p>
+        <p>Gap 2: <c>best =</c> <fillin mode="string" characters="20"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes"><strcmp>(numbers\[\s*i\s*\]\s*&lt;\s*best|best\s*&gt;\s*numbers\[\s*i\s*\])</strcmp></test>
+          <test><strcmp>.*&gt;.*</strcmp><feedback><p>That keeps the <em>largest</em> value seen so far.</p></feedback></test>
+          <test><strcmp>.*&lt;=.*</strcmp><feedback><p>That also works, but it overwrites on ties. Use strict <c>&lt;</c> to keep the first.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>numbers\[\s*i\s*\]</strcmp></test>
+          <test><strcmp>i</strcmp><feedback><p><c>i</c> is the position. <c>best</c> holds a value.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-gap-inline">
+    <title>Fill-in-the-blank with the blanks inside the code</title>
+    <p>
+      The same idea as the previous technique, but the blanks sit
+      <em>where they belong</em> in the code, so the student never has to
+      match <q>gap 1</q> to a position. PreTeXt does not allow a
+      <c>fillin</c> inside a program listing (code lines are plain text), so
+      the code is laid out as a borderless table with one row per line:
+      code fragments in <c>c</c> elements, blanks between them, and
+      indentation written with non-breaking spaces, which keep their width
+      in the code font. Grading is still by regular expression per blank;
+      nothing is run.
+    </p>
+    <exercise label="gap-fitb-inline">
+      <title>Complete <c>find_min</c> in place</title>
+      <statement>
+        <p>Fill in the three blanks so that <c>find_min</c> returns the smallest number in a non-empty list.</p>
+        <tabular halign="left">
+          <row><cell><c>def find_min(numbers):</c></cell></row>
+          <row><cell><c>    best = </c><fillin mode="string" characters="10"/></cell></row>
+          <row><cell><c>    for i in range(1, len(numbers)):</c></cell></row>
+          <row><cell><c>        if </c><fillin mode="string" characters="18"/><c>:</c></cell></row>
+          <row><cell><c>            best = </c><fillin mode="string" characters="10"/></cell></row>
+          <row><cell><c>    return best</c></cell></row>
+        </tabular>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes"><strcmp>numbers\[\s*0\s*\]</strcmp></test>
+          <test><strcmp>0</strcmp><feedback><p>A seed of 0 fails when every number is positive. Start from a real element of the list.</p></feedback></test>
+          <test><strcmp>numbers</strcmp><feedback><p><c>numbers</c> is the whole list. <c>best</c> must hold one number.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>(numbers\[\s*i\s*\]\s*&lt;\s*best|best\s*&gt;\s*numbers\[\s*i\s*\])</strcmp></test>
+          <test><strcmp>.*&gt;.*</strcmp><feedback><p>That keeps the <em>largest</em> value seen so far.</p></feedback></test>
+          <test><strcmp>.*&lt;=.*</strcmp><feedback><p>That also works, but it overwrites on ties. Use strict <c>&lt;</c>.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>numbers\[\s*i\s*\]</strcmp></test>
+          <test><strcmp>i</strcmp><feedback><p><c>i</c> is the position. <c>best</c> holds a value.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+    <p>
+      <em>Trade-offs:</em> this reads like code and supports any number of
+      blanks, with feedback aimed at specific misconceptions. But the code is
+      not runnable, there is no syntax highlighting, copying it gives
+      non-breaking spaces, and the regexes must list every acceptable form.
+      Writing the table by hand is tedious, so for a whole course you would
+      generate it from ordinary code with <c>____</c> markers by a small
+      script.
+    </p>
+  </subsection>
+
+  <subsection xml:id="sec-gap-parsons">
+    <title>Parsons problem with paired distractors</title>
+    <p>
+      The student puts lines in order and picks the right version where two
+      are offered. This is gap-filling by <em>recognition</em>. It works on
+      phones and needs no typing or code execution, which suits weak
+      connections and early sessions.
+    </p>
+    <exercise label="gap-parsons-findmin" language="python" indentation="hide">
+      <statement>
+        <p>Build <c>find_min</c>. Where two versions of a line are offered, pick the correct one.</p>
+      </statement>
+      <blocks>
+        <block><cline>def find_min(numbers):</cline></block>
+        <block>
+          <choice correct="yes"><cline>    best = numbers[0]</cline></choice>
+          <choice><cline>    best = 0</cline></choice>
+        </block>
+        <block><cline>    for i in range(1, len(numbers)):</cline></block>
+        <block>
+          <choice correct="yes"><cline>        if numbers[i] &lt; best:</cline></choice>
+          <choice><cline>        if numbers[i] &gt; best:</cline></choice>
+        </block>
+        <block><cline>            best = numbers[i]</cline></block>
+        <block><cline>    return best</cline></block>
+      </blocks>
+    </exercise>
+  </subsection>
+
+  <subsection xml:id="sec-gap-hparsons">
+    <title>Horizontal Parsons: assemble one line from tokens</title>
+    <p>
+      A <q>micro-Parsons</q> problem, where the student builds a single line
+      from token blocks and unused distractor tokens are allowed. Good for
+      one gap whose difficulty is in getting the syntax right.
+    </p>
+    <exercise label="gap-hparsons-cond" language="python">
+      <statement>
+        <p>Build the condition line of <c>find_min</c>.</p>
+      </statement>
+      <blocks layout="horizontal" randomize="yes">
+        <block><c>if</c></block>
+        <block><c>numbers[i]</c></block>
+        <block><c>&lt;</c></block>
+        <block><c>best</c></block>
+        <block><c>:</c></block>
+        <block correct="no"><c>&gt;</c></block>
+        <block correct="no"><c>i</c></block>
+        <block correct="no"><c>=</c></block>
+      </blocks>
+    </exercise>
+  </subsection>
+</section>

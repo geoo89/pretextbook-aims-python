@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Block 6 of the syllabus (syllabus/blocks/block-06-accumulator.md) as a book chapter.
+  Exercise numbers in the comments refer to the exercise arc in that file.
+  Question types, as chosen for the course:
+    Predict   -> fill-in-the-blank with misconception feedback (demo 1.1)
+    Fill gap  -> ActiveCode with locked code (demo 2.2)
+    Fix bug   -> click the buggy line (demo 3.1), then fix in ActiveCode (demo 3.2)
+    Write     -> ActiveCode with hidden unit tests (demo 4.1)
+  CodeLens (with and without checkpoints) is used for exposition and tracing.
+-->
+<chapter xml:id="ch-block06">
+  <title>Block 6: The Accumulator Pattern</title>
+
+  <introduction>
+    <p>
+      In block 2 you saw that a variable keeps its value until you change it.
+      In block 5 you saw that a loop repeats the same lines once for every
+      element. This block puts the two together: a variable that
+      <em>survives</em> from one pass of the loop to the next, and grows a
+      little on every pass. That is the <term>accumulator pattern</term>, and
+      it is behind nearly every loop that adds up, counts or multiplies.
+    </p>
+    <p>By the end of this chapter you can:
+    <ul>
+      <li><p>name the three jobs in an accumulator loop: <em>init</em>, <em>update</em> and <em>use</em>;</p></li>
+      <li><p>write a running sum, a running count and a running product;</p></li>
+      <li><p>count only the elements that pass a test, using an <c>if</c> inside the loop;</p></li>
+      <li><p>tell what job a variable is doing: <em>stepper</em>, <em>gatherer</em> or <em>flag</em>;</p></li>
+      <li><p>recognise and fix the two classic accumulator bugs: the wrong starting value, and a reset inside the loop.</p></li>
+    </ul></p>
+    <p>
+      As in blocks 4 and 5, most exercises ask you to complete or repair the
+      body of a function.
+    </p>
+  </introduction>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-skeleton">
+    <title>Fill in the skeleton</title>
+    <p>
+      Adding up a list takes three lines, and each has its own job: a
+      starting value set <em>once</em> before the loop begins, an update that
+      happens on <em>every</em> pass through the loop, and a final read of the
+      result once the loop is <em>done</em>.
+    </p>
+
+    <!-- Exercise 1: fill in gap, locked code (demo 2.2) -->
+    <exercise label="b6-ex1-sum-list">
+      <title>Fill in <c>sum_list</c></title>
+      <statement>
+        <p>
+          The function header and the final <c>return</c> are locked. Replace
+          the two <c>____</c> blanks: the value <c>total</c> should start with
+          before the loop, and what <c>total</c> should become on each pass.
+          Leave the <c>for</c> line as it is. Then press <em>Run</em>.
+        </p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex1">
+        <preamble visible="yes"><![CDATA[
+def sum_list(numbers):
+]]></preamble>
+        <code><![CDATA[
+    total = ____
+    for n in numbers:
+        total = ____
+]]></code>
+        <postamble visible="yes"><![CDATA[
+    return total
+]]></postamble>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(sum_list([4, 1, 7]), 12, "sum_list([4, 1, 7])")
+        self.assertEqual(sum_list([10]), 10, "a single number")
+        self.assertEqual(sum_list([-2, 5, -3]), 0, "negative numbers")
+        self.assertEqual(sum_list([]), 0, "an empty list: the loop never runs, so this is the starting value")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+    <p>
+      The editable region also contains the <c>for</c> line. PreTeXt can lock
+      only the code <em>before</em> and <em>after</em> one editable block, so
+      two blanks separated by a line of given code share one region.
+    </p>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-init-update-use">
+    <title>Init, update, use</title>
+    <p>
+      Three lines, three jobs, in a fixed order:
+    
+    <ul>
+      <li><p><alert>init</alert>: one line <em>before</em> the loop sets the starting value;</p></li>
+      <li><p><alert>update</alert>: one line <em>inside</em> the loop changes it on every single pass;</p></li>
+      <li><p><alert>use</alert>: one line <em>after</em> the loop reads the final result.</p></li>
+    </ul></p>
+    <p>
+      Nearly every bug in this block comes from putting one of these three
+      lines in the wrong place.
+    </p>
+
+    <!-- Exercise 2: predict / trace table (FITB, demo 1.1), then CodeLens checkpoints -->
+    <exercise label="b6-ex2-trace-sum">
+      <title>Trace a running sum</title>
+      <statement>
+        <p>Read the program without running it.</p>
+        <program language="python">
+          <code><![CDATA[
+total = 0
+for n in [4, 1, 7]:
+    total = total + n
+print(total)
+]]></code>
+        </program>
+        <p>Fill in the trace table: the value of <c>total</c> after each pass, and what is printed.</p>
+        <tabular halign="center" top="minor" bottom="minor" left="minor" right="minor">
+          <row header="yes" bottom="minor">
+            <cell>Pass</cell><cell><c>n</c></cell><cell><c>total</c> after this pass</cell>
+          </row>
+          <row><cell>1</cell><cell>4</cell><cell><fillin mode="string" characters="5"/></cell></row>
+          <row><cell>2</cell><cell>1</cell><cell><fillin mode="string" characters="5"/></cell></row>
+          <row><cell>3</cell><cell>7</cell><cell><fillin mode="string" characters="5"/></cell></row>
+        </tabular>
+        <p>The program prints: <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes"><strcmp>4</strcmp></test>
+          <test><strcmp>0</strcmp><feedback><p>0 is the value <em>before</em> pass 1. After pass 1, <c>total</c> is <c>0 + 4</c>.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>5</strcmp></test>
+          <test><strcmp>1</strcmp><feedback><p>That is <c>n</c>. The update adds <c>n</c> to the <em>previous</em> total, it does not replace it.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>12</strcmp></test>
+          <test><strcmp>7</strcmp><feedback><p>That is <c>n</c>. The update adds <c>n</c> to the <em>previous</em> total, it does not replace it.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp>12</strcmp></test>
+          <test><strcmp>4\s*,?\s*5\s*,?\s*12</strcmp><feedback><p><c>print</c> is <em>after</em> the loop (not indented), so it runs once, at the end.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <p>
+      Now check your table by stepping through the program. CodeLens stops
+      each time the <c>for</c> line has run and asks for <c>total</c>. The
+      first stop is at the start of pass 1, each later stop comes after
+      another pass, and the last stop is when the loop has finished.
+    </p>
+    <exercise label="b6-ex2-codelens">
+      <title>Step through the running sum</title>
+      <statement>
+        <p>Press <em>Next</em> to step. At each question, type the current value of <c>total</c>.</p>
+      </statement>
+      <program language="python" interactive="codelens" label="b6-cl-trace-sum">
+        <code><![CDATA[
+total = 0
+for n in [4, 1, 7]:
+    total = total + n
+print(total)
+]]></code>
+        <checkpoint line="2" answer-variable="globals.total">
+          <prompt>The <c>for</c> line has just run. What is <c>total</c> right now?</prompt>
+        </checkpoint>
+      </program>
+    </exercise>
+    <p>
+      Compare this with block 5's <c>total = i</c> exercise. This time
+      <c>total</c> really accumulates, because the update line adds to the
+      previous value (<c>total + n</c>) instead of throwing it away.
+    </p>
+
+    <!-- Exercise 3: predict (FITB) -->
+    <exercise label="b6-ex3-count">
+      <title>Trace a running count</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+count = 0
+for word in ["a", "bb", "ccc"]:
+    count = count + 1
+print(count)
+]]></code>
+        </program>
+        <p>It prints: <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>3</strcmp>
+            <feedback><p>Yes. Same init, update, use shape as before, but counting passes instead of adding values: <c>count</c> goes up by exactly 1 every time, whatever <c>word</c> is.</p></feedback>
+          </test>
+          <test><strcmp>6</strcmp><feedback><p>6 is the total number of <em>letters</em>. The update adds <c>1</c>, not the length of <c>word</c>.</p></feedback></test>
+          <test><strcmp>1</strcmp><feedback><p><c>count</c> is not reset inside the loop, so the 1s add up.</p></feedback></test>
+          <test><strcmp>(1\s*,?\s*2\s*,?\s*3)</strcmp><feedback><p><c>print</c> is after the loop, so it runs once.</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>How many times does the loop run? What does each pass add?</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-roles">
+    <title>Naming the job a variable is doing</title>
+    <p>
+      Not every variable in a loop does the same kind of work. Three roles
+      cover most of the loops in this course:
+    
+    <dl>
+      <li><title>stepper</title><p>counts through the passes, like <c>i</c> in <c>for i in range(n)</c>.</p></li>
+      <li><title>gatherer</title><p>builds up a result across passes, like <c>total</c> in a running sum or <c>count</c> in a running count.</p></li>
+      <li><title>flag</title><p>starts one way and can switch only once: <c>found_zero = False</c>, then perhaps <c>found_zero = True</c>, and never back.</p></li>
+    </dl></p>
+    <p>
+      Knowing a variable's role tells you what a bug looks like. A gatherer
+      that is reset partway through the loop is <em>always</em> wrong.
+    </p>
+    <p>
+      Step through this function and watch the four variables in the frame
+      on the right. Notice which ones change on every pass, which change
+      only sometimes, and which change at most once.
+    </p>
+    <program language="python" interactive="codelens" label="b6-cl-roles">
+      <code><![CDATA[
+def summarize(numbers):
+    total = 0
+    negative_count = 0
+    found_zero = False
+    for i in range(len(numbers)):
+        total = total + numbers[i]
+        if numbers[i] < 0:
+            negative_count = negative_count + 1
+        if numbers[i] == 0:
+            found_zero = True
+    return total, negative_count, found_zero
+
+print(summarize([3, -1, 0, -4]))
+]]></code>
+    </program>
+
+    <!-- Exercise 4: roles. FITB with case-insensitive answers (the syllabus has it as MCQ) -->
+    <exercise label="b6-ex4-roles">
+      <title>Label the variables</title>
+      <statement>
+        <p>For each variable in <c>summarize</c>, type its role: <c>stepper</c>, <c>gatherer</c> or <c>flag</c>.</p>
+        <tabular top="minor" bottom="minor" left="minor" right="minor">
+          <row header="yes" bottom="minor"><cell>Variable</cell><cell>Role</cell></row>
+          <row><cell><c>i</c></cell><cell><fillin mode="string" characters="10"/></cell></row>
+          <row><cell><c>total</c></cell><cell><fillin mode="string" characters="10"/></cell></row>
+          <row><cell><c>negative_count</c></cell><cell><fillin mode="string" characters="10"/></cell></row>
+          <row><cell><c>found_zero</c></cell><cell><fillin mode="string" characters="10"/></cell></row>
+        </tabular>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes"><strcmp case="insensitive">stepper</strcmp></test>
+          <test><strcmp case="insensitive">gatherer</strcmp><feedback><p><c>i</c> just counts positions, 0 up to <c>len(numbers) - 1</c>. It does not collect anything.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp case="insensitive">gatherer</strcmp></test>
+          <test><strcmp case="insensitive">stepper</strcmp><feedback><p><c>total</c> goes up by different amounts, and it collects a running sum.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp case="insensitive">gatherer</strcmp><feedback><p>Right: a running count, updated only on some passes.</p></feedback></test>
+          <test><strcmp case="insensitive">flag</strcmp><feedback><p>A flag can switch only once. <c>negative_count</c> can go up many times.</p></feedback></test>
+          <test><strcmp case="insensitive">stepper</strcmp><feedback><p>A stepper moves on every pass. <c>negative_count</c> changes only when the number is negative.</p></feedback></test>
+        </evaluate>
+        <evaluate>
+          <test correct="yes"><strcmp case="insensitive">flag</strcmp></test>
+          <test><strcmp case="insensitive">gatherer</strcmp><feedback><p>Once <c>found_zero</c> is <c>True</c>, nothing ever sets it back. It records <em>whether</em>, not <em>how many</em>.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-seed">
+    <title>Choosing the right starting value</title>
+    <p>
+      The starting value has to fit the update. <c>0</c> is the right start
+      for a running <em>sum</em>, because adding 0 changes nothing. For a
+      running <em>product</em>, <c>0</c> is a disaster: multiplying by 0 wipes
+      out everything, for good.
+    </p>
+
+    <!-- Exercise 5: predict (FITB) -->
+    <exercise label="b6-ex5-product">
+      <title>A product that is always zero</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+def product_of_list(numbers):
+    total = 0
+    for n in numbers:
+        total = total * n
+    return total
+
+print(product_of_list([2, 3, 4]))
+]]></code>
+        </program>
+        <p>It prints: <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>0</strcmp>
+            <feedback><p>Yes. On the first pass <c>total * n</c> is <c>0 * 2</c>, so <c>total</c> stays 0, and it stays 0 for every remaining number.</p></feedback>
+          </test>
+          <test><strcmp>24</strcmp><feedback><p>24 is what the function is <em>meant</em> to return. Trace it: what is <c>total</c> after the first pass, starting from 0?</p></feedback></test>
+          <test><strcmp>9</strcmp><feedback><p>That is the sum. The update multiplies.</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>Work out <c>total</c> after the first pass: <c>0 * 2</c>.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <!-- Exercise 6: fix bug = find (demo 3.1) + fix (demo 3.2) -->
+    <exercise label="b6-ex6-find">
+      <title>Fix the seed, step 1: find the bug</title>
+      <statement>
+        <p><c>product_of_list([2, 3, 4])</c> should return <c>24</c>, but returns <c>0</c>. Click the line that causes the bug.</p>
+      </statement>
+      <areas language="python">
+        <cline><area correct="no">def product_of_list(numbers):</area></cline>
+        <cline>    <area correct="yes">total = 0</area></cline>
+        <cline>    <area correct="no">for n in numbers:</area></cline>
+        <cline>        <area correct="no">total = total * n</area></cline>
+        <cline>    <area correct="no">return total</area></cline>
+      </areas>
+      <feedback>
+        <p>The update line is fine: a product <em>should</em> multiply. The problem is what it multiplies first.</p>
+      </feedback>
+    </exercise>
+
+    <exercise label="b6-ex6-fix">
+      <title>Fix the seed, step 2: fix it</title>
+      <statement>
+        <p>Fix the bug by changing <alert>one line only</alert>. Press <em>Run</em> to run the tests. Use <em>Reset</em> to start again.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex6">
+        <code><![CDATA[
+def product_of_list(numbers):
+    total = 0
+    for n in numbers:
+        total = total * n
+    return total
+
+print(product_of_list([2, 3, 4]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(product_of_list([2, 3, 4]), 24, "product_of_list([2, 3, 4])")
+        self.assertEqual(product_of_list([5]), 5, "a single number")
+        self.assertEqual(product_of_list([-2, 3]), -6, "a negative number")
+        self.assertEqual(product_of_list([7, 0, 2]), 0, "a zero in the list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+    <p>
+      Multiplying by 1 leaves a number unchanged, so <c>1</c> is the
+      <q>do-nothing</q> start for a product, just as <c>0</c> is the
+      do-nothing start for a sum.
+    </p>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-reset">
+    <title>Resetting inside the loop</title>
+    <p>
+      If the init line ends up <em>inside</em> the loop body instead of just
+      above it, the accumulator is wiped out and restarted on every single
+      pass. When the loop ends, it remembers only the last pass.
+    </p>
+
+    <!-- Exercise 7: predict (FITB) -->
+    <exercise label="b6-ex7-reset">
+      <title>Reset on every pass</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+def sum_list_broken(numbers):
+    for n in numbers:
+        total = 0
+        total = total + n
+    return total
+
+print(sum_list_broken([4, 1, 7]))
+]]></code>
+        </program>
+        <p>It prints: <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>7</strcmp>
+            <feedback><p>Yes. <c>total = 0</c> is inside the loop, so every pass starts again from 0 and adds only the current element. Only the last one, 7, survives.</p></feedback>
+          </test>
+          <test><strcmp>12</strcmp><feedback><p>12 is what a <em>correct</em> sum would give. Look at where <c>total = 0</c> is indented: how often does it run?</p></feedback></test>
+          <test><strcmp>0</strcmp><feedback><p><c>total</c> is set to 0, but the very next line adds <c>n</c> before the pass ends.</p></feedback></test>
+          <test><strcmp>4</strcmp><feedback><p>4 is the <em>first</em> element. Which pass runs last?</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>Trace one pass: what does <c>total</c> hold at the end of it?</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <p>
+      Watch the reset happen. CodeLens stops each time the update line
+      <c>total = total + n</c> has just run, and asks for <c>total</c>. If
+      the sum were accumulating, you would see 4, 5, 12.
+    </p>
+    <exercise label="b6-ex7-codelens">
+      <title>Watch <c>total</c> being reset</title>
+      <statement>
+        <p>Press <em>Next</em> to step, and answer each question.</p>
+      </statement>
+      <program language="python" interactive="codelens" label="b6-cl-reset">
+        <code><![CDATA[
+def sum_list_broken(numbers):
+    for n in numbers:
+        total = 0
+        total = total + n
+    return total
+
+print(sum_list_broken([4, 1, 7]))
+]]></code>
+        <checkpoint line="4" answer-variable="current_frame.total">
+          <prompt>The line <c>total = total + n</c> has just run. What is <c>total</c> now?</prompt>
+          <feedback>Just before this line, <c>total = 0</c> ran. So <c>total</c> is now 0 plus the current <c>n</c>.</feedback>
+        </checkpoint>
+        <checkpoint line="5" answer-variable="current_frame.total">
+          <prompt>The loop is over. What does the function return?</prompt>
+        </checkpoint>
+      </program>
+    </exercise>
+
+    <!-- Exercise 8: fix bug, find + fix -->
+    <exercise label="b6-ex8-find">
+      <title>Fix the placement, step 1: find the bug</title>
+      <statement>
+        <p><c>sum_list_broken([4, 1, 7])</c> should return <c>12</c>. Click the line that is in the wrong place.</p>
+      </statement>
+      <areas language="python">
+        <cline><area correct="no">def sum_list_broken(numbers):</area></cline>
+        <cline>    <area correct="no">for n in numbers:</area></cline>
+        <cline>        <area correct="yes">total = 0</area></cline>
+        <cline>        <area correct="no">total = total + n</area></cline>
+        <cline>    <area correct="no">return total</area></cline>
+      </areas>
+      <feedback>
+        <p>The init line belongs <em>before</em> the loop, so that it runs once.</p>
+      </feedback>
+    </exercise>
+
+    <exercise label="b6-ex8-fix">
+      <title>Fix the placement, step 2: move it</title>
+      <statement>
+        <p>Fix the function by <alert>moving one line</alert>. Do not add or delete any other line.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex8">
+        <code><![CDATA[
+def sum_list_broken(numbers):
+    for n in numbers:
+        total = 0
+        total = total + n
+    return total
+
+print(sum_list_broken([4, 1, 7]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(sum_list_broken([4, 1, 7]), 12, "sum_list_broken([4, 1, 7])")
+        self.assertEqual(sum_list_broken([7, 1, 4]), 12, "the same numbers in another order")
+        self.assertEqual(sum_list_broken([]), 0, "an empty list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+
+    <!-- Exercise 9: predict (FITB), then find + fix -->
+    <p>
+      Here is the same bug again, this time combined with an <c>if</c>. It
+      is adapted from the course's <c>homework_6</c> notebook.
+    </p>
+    <exercise label="b6-ex9-predict">
+      <title>The same bug, for real: predict</title>
+      <statement>
+        <p><c>positives</c> should count the numbers that are zero or greater, and return <c>3</c> for this list.</p>
+        <program language="python">
+          <code><![CDATA[
+def positives(lst):
+    for elem in lst:
+        npos = 0
+        if elem >= 0:
+            npos += 1
+    return npos
+
+myList = [3, -4, -7, 8, 1]
+print(positives(myList))
+]]></code>
+        </program>
+        <p>What does it <em>actually</em> print? <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>1</strcmp>
+            <feedback><p>Yes. Every pass resets <c>npos</c> to 0 before maybe adding 1, so the result only says whether the <em>last</em> element (1) is positive.</p></feedback>
+          </test>
+          <test><strcmp>3</strcmp><feedback><p>3 is what it <em>should</em> print. Where is <c>npos = 0</c>?</p></feedback></test>
+          <test><strcmp>0</strcmp><feedback><p>The last pass resets <c>npos</c> to 0, but then checks <c>elem &gt;= 0</c> for the last element. Is 1 positive?</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>Trace only the last pass: <c>elem</c> is 1.</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <exercise label="b6-ex9-find">
+      <title>The same bug, for real: find it</title>
+      <statement>
+        <p>Click the line that is in the wrong place.</p>
+      </statement>
+      <areas language="python">
+        <cline><area correct="no">def positives(lst):</area></cline>
+        <cline>    <area correct="no">for elem in lst:</area></cline>
+        <cline>        <area correct="yes">npos = 0</area></cline>
+        <cline>        <area correct="no">if elem &gt;= 0:</area></cline>
+        <cline>            <area correct="no">npos += 1</area></cline>
+        <cline>    <area correct="no">return npos</area></cline>
+      </areas>
+    </exercise>
+
+    <exercise label="b6-ex9-fix">
+      <title>The same bug, for real: fix it</title>
+      <statement>
+        <p>Fix <c>positives</c> by <alert>moving one line</alert>.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex9">
+        <code><![CDATA[
+def positives(lst):
+    for elem in lst:
+        npos = 0
+        if elem >= 0:
+            npos += 1
+    return npos
+
+myList = [3, -4, -7, 8, 1]
+print(positives(myList))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(positives([3, -4, -7, 8, 1]), 3, "positives([3, -4, -7, 8, 1])")
+        self.assertEqual(positives([5, 6, -1]), 2, "positives([5, 6, -1])")
+        self.assertEqual(positives([0, -1]), 1, "zero counts as positive here")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-count-if">
+    <title>Counting only when a condition is met</title>
+    <p>
+      To count <em>how many</em> elements pass a test, the loop still visits
+      every element, but the update only runs when an <c>if</c> lets it.
+      The loop running and the count changing are two different things.
+    </p>
+
+    <!-- Exercise 10: predict (FITB) -->
+    <exercise label="b6-ex10-negatives">
+      <title>Count the negatives</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+count = 0
+for n in [3, -1, 4, -2, 0]:
+    if n < 0:
+        count = count + 1
+print(count)
+]]></code>
+        </program>
+        <p>It prints: <fillin mode="string" characters="5"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>2</strcmp>
+            <feedback><p>Yes. The loop visits all five numbers, but <c>count</c> goes up only for <c>-1</c> and <c>-2</c>.</p></feedback>
+          </test>
+          <test><strcmp>5</strcmp><feedback><p>The loop runs 5 times, but the update is inside the <c>if</c>.</p></feedback></test>
+          <test><strcmp>3</strcmp><feedback><p>Is 0 less than 0?</p></feedback></test>
+          <test><strcmp>-3</strcmp><feedback><p>That is the <em>sum</em> of the negatives. The update adds 1, not <c>n</c>.</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>For which values of <c>n</c> is <c>n &lt; 0</c> true?</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <!-- Exercise 11: write (demo 4.1) -->
+    <exercise label="b6-ex11-write">
+      <title>Write your own count-if functions</title>
+      <statement>
+        <p>Complete both functions:
+        <ul>
+          <li><p><c>count_negatives(numbers)</c> returns how many numbers in the list are negative.</p></li>
+          <li><p><c>count_matching(words, letter)</c> returns how many strings in <c>words</c> start with <c>letter</c>. (Hint: a string <c>s</c> starts with <c>letter</c> when <c>s[0] == letter</c>.)</p></li>
+        </ul></p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex11">
+        <code><![CDATA[
+def count_negatives(numbers):
+    # your code here
+    pass
+
+
+def count_matching(words, letter):
+    # your code here
+    pass
+
+
+print(count_negatives([3, -1, 4, -2, 0]))
+print(count_matching(["apple", "banana", "avocado"], "a"))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_count_negatives(self):
+        self.assertEqual(count_negatives([3, -1, 4, -2, 0]), 2, "count_negatives([3, -1, 4, -2, 0])")
+        self.assertEqual(count_negatives([1, 2, 3]), 0, "no negatives")
+        self.assertEqual(count_negatives([]), 0, "an empty list")
+    def test_count_matching(self):
+        self.assertEqual(count_matching(["apple", "banana", "avocado"], "a"), 2, "words starting with 'a'")
+        self.assertEqual(count_matching(["cat", "dog"], "z"), 0, "no matches")
+        self.assertEqual(count_matching(["Bob", "bob"], "b"), 1, "'B' and 'b' are different letters")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-error">
+    <title>An error from a missing init</title>
+    <p>
+      In block 2 you met <c>NameError</c>: Python does not know a name,
+      usually because of a typo. The same kind of error appears when an
+      accumulator is used before its init line has run, because that line
+      was deleted, or ended up after the loop instead of before it.
+    </p>
+    <p>
+      Inside a function, Python gives this error a more specific name.
+      Because <c>total</c> is assigned somewhere in the function, Python
+      treats it as the function's own (local) variable, so reading it before
+      it has a value raises <c>UnboundLocalError</c>, a close cousin of
+      <c>NameError</c>. Either way, the cause is the same: the name has no
+      value yet at that point in the program. (The message after the error
+      name differs between Python versions.)
+    </p>
+
+    <!-- Exercise 12: predict an error (FITB) -->
+    <exercise label="b6-ex12-missing-init">
+      <title>Missing init entirely</title>
+      <statement>
+        <program language="python">
+          <code><![CDATA[
+def sum_list_missing_init(numbers):
+    for n in numbers:
+        total = total + n
+    return total
+
+print(sum_list_missing_init([4, 1, 7]))
+]]></code>
+        </program>
+        <p>
+          Does this run? If it prints a number, type the number. If it stops
+          with an error, type only the name of the error.
+        </p>
+        <p><fillin mode="string" characters="20"/></p>
+      </statement>
+      <evaluation>
+        <evaluate>
+          <test correct="yes">
+            <strcmp>UnboundLocalError(:.*)?</strcmp>
+            <feedback><p>Yes. On the very first pass, <c>total + n</c> tries to read <c>total</c>, which has no value yet.</p></feedback>
+          </test>
+          <test><strcmp>NameError(:.*)?</strcmp><feedback><p>Very close, and the cause is exactly that: <c>total</c> has no value yet. Inside a function, Python reports this as the more specific <c>UnboundLocalError</c>.</p></feedback></test>
+          <test><strcmp>12</strcmp><feedback><p>That would need <c>total</c> to start at 0. Where is <c>total</c> given its first value?</p></feedback></test>
+          <test><strcmp>.*Error.*</strcmp><feedback><p>It is an error, but not that one. What is wrong with <c>total + n</c> on the first pass?</p></feedback></test>
+          <test><strcmp>.*</strcmp><feedback><p>What is <c>total</c> the first time <c>total + n</c> runs?</p></feedback></test>
+        </evaluate>
+      </evaluation>
+    </exercise>
+
+    <!-- Exercise 13: fix bug. The "find" step locates where the error is reported,
+         which is not the line that needs changing. -->
+    <exercise label="b6-ex13-find">
+      <title>Add back the missing line, step 1: where does it crash?</title>
+      <statement>
+        <p>Click the line where Python stops with the error.</p>
+      </statement>
+      <areas language="python">
+        <cline><area correct="no">def sum_list_missing_init(numbers):</area></cline>
+        <cline>    <area correct="no">for n in numbers:</area></cline>
+        <cline>        <area correct="yes">total = total + n</area></cline>
+        <cline>    <area correct="no">return total</area></cline>
+      </areas>
+      <feedback>
+        <p>
+          The error is <em>reported</em> on the update line, because that is
+          where <c>total</c> is first read. But that line is correct. The fix
+          is a line that is missing further up. The line in the error message
+          is where Python noticed the problem, not always where it is.
+        </p>
+      </feedback>
+    </exercise>
+
+    <exercise label="b6-ex13-fix">
+      <title>Add back the missing line, step 2: fix it</title>
+      <statement>
+        <p>Fix the function by <alert>adding one line</alert>.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex13">
+        <code><![CDATA[
+def sum_list_missing_init(numbers):
+    for n in numbers:
+        total = total + n
+    return total
+
+print(sum_list_missing_init([4, 1, 7]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(sum_list_missing_init([4, 1, 7]), 12, "sum_list_missing_init([4, 1, 7])")
+        self.assertEqual(sum_list_missing_init([]), 0, "an empty list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </section>
+
+  <!-- ============================================================== -->
+  <section xml:id="b6-write">
+    <title>Write your own</title>
+    <p>
+      Write each function from scratch, with the full init, update, use
+      structure. There are no blanks this time.
+    </p>
+
+    <!-- Exercise 14: write (demo 4.1), three parts -->
+    <exercise label="b6-ex14-sum">
+      <title><c>sum_list</c></title>
+      <statement>
+        <p>Write <c>sum_list(numbers)</c>, which returns the sum of all the numbers. Do not use Python's built-in <c>sum()</c>.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex14-sum">
+        <code><![CDATA[
+# write sum_list here
+
+
+print(sum_list([4, 1, 7]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+def _banned(*args, **kwargs):
+    raise Exception("sum() is not allowed in this exercise: write the loop yourself")
+sum = _banned
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(sum_list([4, 1, 7]), 12, "sum_list([4, 1, 7])")
+        self.assertEqual(sum_list([-5, 5]), 0, "sum_list([-5, 5])")
+        self.assertEqual(sum_list([]), 0, "an empty list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+
+    <exercise label="b6-ex14-average">
+      <title><c>average</c></title>
+      <statement>
+        <p>Write <c>average(numbers)</c>, which returns the average of a non-empty list: the sum divided by the count. Use an accumulator for each.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex14-average">
+        <code><![CDATA[
+# write average here
+
+
+print(average([4, 1, 7]))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(average([4, 1, 7]), 4, "average([4, 1, 7])")
+        self.assertEqual(average([1, 2, 3, 4]), 2.5, "average([1, 2, 3, 4])")
+        self.assertEqual(average([-3]), -3, "a single number")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+
+    <exercise label="b6-ex14-count">
+      <title><c>count_matching</c></title>
+      <statement>
+        <p>Write <c>count_matching(numbers, threshold)</c>, which returns how many numbers in the list are <em>greater than</em> <c>threshold</c>.</p>
+      </statement>
+      <program language="python" interactive="activecode" label="b6-ac-ex14-count">
+        <code><![CDATA[
+# write count_matching here
+
+
+print(count_matching([4, 1, 7, 5], 4))
+]]></code>
+        <tests><![CDATA[
+from unittest.gui import TestCaseGui
+
+class Tests(TestCaseGui):
+    def test_examples(self):
+        self.assertEqual(count_matching([4, 1, 7, 5], 4), 2, "count_matching([4, 1, 7, 5], 4): 4 itself is not greater than 4")
+        self.assertEqual(count_matching([1, 2], 10), 0, "nothing is greater")
+        self.assertEqual(count_matching([-1, -2, 0], -3), 3, "everything is greater")
+        self.assertEqual(count_matching([], 0), 0, "an empty list")
+
+Tests().main()
+]]></tests>
+      </program>
+    </exercise>
+  </section>
+</chapter>
